@@ -70,7 +70,7 @@ while True:
         
         start_time = time.time()
         
-    if moisture() < moisture_threshold:
+    if elapsed_time >= one_hour and moisture() < moisture_threshold:
         print("Moisture low! Watering")
         run_pump()
         
