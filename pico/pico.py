@@ -13,6 +13,8 @@ import uselect
 start_time = time.time()
 twelve_hours = 12 * 60 * 60
 
+moisture_threshold = 60
+
 pump_control = Pin(17, Pin.OUT)
 pump_water_alarm = Pin(13, Pin.IN)
 plant_water_alarm = Pin(9, Pin.IN)
@@ -44,6 +46,11 @@ def pump_request():
         select_result = uselect.select([stdin], [], [], 0)
         
     return result
+
+def run_pump():
+    pump_control.high()
+    utime.sleep(1)
+    pump_control.low()
     
 while True:
     led_builtin.toggle()
@@ -54,11 +61,15 @@ while True:
     if elapsed_time >= twelve_hours:
         print("12 hours have passed")
         
-        pump_control.high()
-        utime.sleep(1)
-        pump_control.low()
+        run_pump()
         
         start_time = time.time()
+        
+    if moisture() < moisture_threshold:
+        print("Moisture low! Watering")
+        run_pump()
+        
+        # Might be watering too many times since moisture might take time to take effect
     
     if pump_request():
         if plant_water_alarm.value() or pump_water_alarm.value():
@@ -66,11 +77,9 @@ while True:
         
         print("Pump toggle")
         
-        pump_control.high()
-        utime.sleep(1)
-        pump_control.low()
-    else:
-        utime.sleep(1)
+        run_pump()
+        
+    utime.sleep(1)
         
     print("%d,%d,%.0f,%.0f" % (plant_water_alarm.value(), pump_water_alarm.value(), moisture(), light()))
 
