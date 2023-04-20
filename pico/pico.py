@@ -5,9 +5,13 @@
 # 2023-04-19, KJ, First version
 
 from machine import Pin, ADC, UART
+import time
 import utime
 from sys import stdin
 import uselect
+
+start_time = time.time()
+twelve_hours = 12 * 60 * 60
 
 pump_control = Pin(17, Pin.OUT)
 pump_water_alarm = Pin(13, Pin.IN)
@@ -43,6 +47,18 @@ def pump_request():
     
 while True:
     led_builtin.toggle()
+    
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+    
+    if elapsed_time >= twelve_hours:
+        print("12 hours have passed")
+        
+        pump_control.high()
+        utime.sleep(1)
+        pump_control.low()
+        
+        start_time = time.time()
     
     if pump_request():
         if plant_water_alarm.value() or pump_water_alarm.value():
