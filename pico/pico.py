@@ -53,15 +53,11 @@ def run_pump():
         print("Alarm!")
         return
     
-    print("Running pump")
-    
     pump_control.high()
     utime.sleep(1)
     pump_control.low()
     
 while True:
-    run_pump()
-    
     led_builtin.toggle()
     
     current_time = time.time()
@@ -73,15 +69,12 @@ while True:
         run_pump()
         
         start_time = time.time()
-    else:
-        utime.sleep(1)
-    
-    if pump_request():
-        print("Pump toggle")
         
+    if moisture() < moisture_threshold:
+        print("Moisture low! Watering")
         run_pump()
-    else:
-        utime.sleep(1)
+        
+    utime.sleep(1)
         
     print("%d,%d,%.0f,%.0f" % (plant_water_alarm.value(), pump_water_alarm.value(), moisture(), light()))
 
