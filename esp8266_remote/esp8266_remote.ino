@@ -38,12 +38,24 @@ String currentLine = "";
 char response_s[10];
 char s[25];
 
+// mqtt
+#include <PubSubClient.h>
+const char* mqttServer = "192.168.10.1";
+const int mqttPort = 1883; 
+const char* mqttUsername = "team07";
+const char* mqttKey = "tjells123";
+const char* mqttTopic = "pico/data/button";
+
+PubSubClient mqtt(client);
+
 ICACHE_RAM_ATTR void button_a_isr()
 {
   if (millis() - count_prev_time > DEBOUNCE_TIME)
   {
     count_prev_time = millis();
     button_a_count++;
+    Serial.println("Button count");
+    mqtt.publish(mqttTopic, "Button pressed");
   }
 }
 
@@ -93,11 +105,25 @@ void setup()
   Serial.println(WiFi.localIP());
   Serial.println("");
 
+  // connect to mqtt
+  mqtt.setServer(mqttServer, mqttPort);
+
+  while (!mqtt.connected()) {
+    Serial.println("Connecting to MQTT...");
+
+    if (mqtt.connect("ESP32Client", mqttUsername, mqttKey)) {
+      Serial.println("Connected to MQTT");  
+    } else {
+      Serial.print("Failed with state: ");
+      Serial.println(mqtt.state());
+      delay(2000);  
+    }
+  }
+
   // start webserver
   Serial.println("Starting webserver");
   Serial.println("");
   server.begin();
-  Serial.println("Webserver started");
 }
 
 void loop()
