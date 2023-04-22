@@ -14,6 +14,7 @@
 #define PIN_BUTTON      4
 #define DEBOUNCE_TIME 200 // milliseconds
 volatile int button_a_count;
+volatile bool button_pressed = false;
 volatile unsigned long count_prev_time;
 
 // Wifi
@@ -44,7 +45,7 @@ const char* mqttServer = "192.168.10.1";
 const int mqttPort = 1883; 
 const char* mqttUsername = "team07";
 const char* mqttKey = "tjells123";
-const char* mqttTopic = "pico/data/button";
+const char* mqttTopic = "pico/button";
 
 PubSubClient mqtt(client);
 
@@ -54,8 +55,9 @@ ICACHE_RAM_ATTR void button_a_isr()
   {
     count_prev_time = millis();
     button_a_count++;
-    Serial.println("Button count");
-    mqtt.publish(mqttTopic, "Button pressed");
+    Serial.println("Button pressed");
+    
+    button_pressed = true;
   }
 }
 
@@ -105,21 +107,6 @@ void setup()
   Serial.println(WiFi.localIP());
   Serial.println("");
 
-  // connect to mqtt
-  mqtt.setServer(mqttServer, mqttPort);
-
-  while (!mqtt.connected()) {
-    Serial.println("Connecting to MQTT...");
-
-    if (mqtt.connect("ESP32Client", mqttUsername, mqttKey)) {
-      Serial.println("Connected to MQTT");  
-    } else {
-      Serial.print("Failed with state: ");
-      Serial.println(mqtt.state());
-      delay(2000);  
-    }
-  }
-
   // start webserver
   Serial.println("Starting webserver");
   Serial.println("");
@@ -127,7 +114,29 @@ void setup()
 }
 
 void loop()
-{
+{  
+  if (button_pressed) {
+    // connect to mqtt
+    mqtt.setServer(mqttServer, mqttPort);
+  
+    while (!mqtt.connected()) {
+      Serial.println("Connecting to MQTT...");
+  
+      if (mqtt.connect("ESP32Client", mqttUsername, mqttKey)) {
+        Serial.println("Connected to MQTT");  
+        mqtt.publish(mqttTopic, "Button pressed");
+      } else {
+        Serial.print("Failed with state: ");
+        Serial.println(mqtt.state());
+        delay(2000);  
+      }
+    }
+
+    button_pressed = false;
+  }
+
+  delay(1000);
+  
   // test for newæ client
   client = server.available();
   if (client) {
