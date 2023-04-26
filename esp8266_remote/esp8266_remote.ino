@@ -107,11 +107,19 @@ void setup()
   Serial.println(WiFi.localIP());
   Serial.println("");
 
+  // mqtt
+  mqtt.setServer(mqttServer, mqttPort);
+  mqtt.setCallback(callback);
+
   // start webserver
   Serial.println("Starting webserver");
   Serial.println("");
   server.begin();
 }
+
+int plant_water_alarm = 0;
+int pump_water_alarm = 0;
+int moisture = 0;
 
 void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
@@ -125,6 +133,14 @@ void callback(char* topic, byte* message, unsigned int length) {
     message_buffer += (char)message[i] ;
   }
   Serial.println();
+
+  if (String(topic) == "pico/data/plant_water_alarm" || String(topic) == "pico/data/pump_water_alarm") {
+    plant_water_alarm = message_buffer.toInt();
+  } else if (String(topic) == "pico/data/pump_water_alarm") {
+    pump_water_alarm = message_buffer.toInt();  
+  } else if (String(topic) == "pico/data/moisture") {
+    moisture = message_buffer.toInt();
+  }
 }
 
 void mqtt_connect() {
@@ -132,11 +148,15 @@ void mqtt_connect() {
       Serial.println("Connecting to MQTT...");
   
       if (mqtt.connect("ESP32Client", mqttUsername, mqttKey)) {
-        Serial.println("Connected to MQTT");  
-        mqtt.subscribe("pico/button");
+        Serial.println("Connected to MQTT");
+        mqtt.subscribe("pico/data/plant_water_alarm");
+        mqtt.subscribe("pico/data/pump_water_alarm");
+        mqtt.subscribe("pico/data/moisture");
+        mqtt.subscribe("pico/data/light");
       } else {
         Serial.print("Failed with state: ");
         Serial.println(mqtt.state());
+        
         delay(2000);  
       }
     }
@@ -145,9 +165,23 @@ void mqtt_connect() {
 void loop()
 {  
   if (!mqtt.connected()) {
-      mqtt_connect()
+      mqtt_connect();
   }
   mqtt.loop();
+
+  if (plant_water_alarm == 0 || pump_water_alarm) {
+    digitalWrite(PIN_LED_RED, HIGH);
+    digitalWrite(PIN_LED_YELLOW, LOW);
+    digitalWrite(PIN_LED_GREEN, LOW);  
+  } else if (moisture < 60) {
+    digitalWrite(PIN_LED_RED, LOW);
+    digitalWrite(PIN_LED_YELLOW, HIGH);
+    digitalWrite(PIN_LED_GREEN, LOW);
+  } else {
+    digitalWrite(PIN_LED_RED, LOW);
+    digitalWrite(PIN_LED_YELLOW, LOW);
+    digitalWrite(PIN_LED_GREEN, HIGH); 
+  };
 
   if (button_pressed) {
     if (mqtt.publish(mqttTopic, "p")) {
@@ -158,73 +192,5 @@ void loop()
     }
 
     button_pressed = false;
-  }
-
-  delay(1000);
-  
-  // test for newæ client
-  client = server.available();
-  if (client) {
-    Serial.println("New client");
-    currentLine = "";
-    clientConnectTime = millis();
-    while (client.connected() && millis() - clientConnectTime < CLIENT_TIMEOUT) {
-      if (client.available()) {
-        char c = client.read();
-        Serial.write(c);
-
-        if (c == '\n') {
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
-          if (currentLine.length() == 0) {
-            Serial.println("Sending response");
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-type: text/html");
-            sprintf (s, "Content-Length: %d",strlen(response_s));
-            client.println(s);
-            client.println();
-            //client.println("Connection: close");
-            client.println(response_s);
-            client.println();
-            response_s[0] = 0;
-          } else {
-
-            if (currentLine.startsWith("GET /led/red/on")) {
-              Serial.println("Red LED on");
-              digitalWrite(PIN_LED_RED, HIGH);
-            } else if (currentLine.startsWith("GET /led/red/off")) {
-              Serial.println("Red LED off");
-              digitalWrite(PIN_LED_RED, LOW);
-    
-            } else if (currentLine.startsWith("GET /led/yellow/on")) {
-              Serial.println("Yellow LED on");
-              digitalWrite(PIN_LED_YELLOW, HIGH);
-            } else if (currentLine.startsWith("GET /led/yellow/off")) {
-              Serial.println("Yellow LED off");
-              digitalWrite(PIN_LED_YELLOW, LOW);
-    
-            } else if (currentLine.startsWith("GET /led/green/on")) {
-              Serial.println("Green LED on");
-              digitalWrite(PIN_LED_GREEN, HIGH);
-            } else if (currentLine.startsWith("GET /led/green/off")) {
-              Serial.println("Green LED off");
-              digitalWrite(PIN_LED_GREEN, LOW);
-
-            } else if (currentLine.startsWith("GET /button/a/count")) {
-              Serial.println("Return button count");
-              sprintf (response_s, "%d", button_a_count);
-              button_a_count = 0;
-            }        
-
-            currentLine = "";
-          }          
-        } else if (c != '\r') {
-          currentLine += c;          
-        }
-      }
-    }
-    client.stop();
-    Serial.println("Client disconnected.");
-    Serial.println("");
   }
 }
