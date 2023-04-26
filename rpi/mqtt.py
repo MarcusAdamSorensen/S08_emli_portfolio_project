@@ -9,12 +9,8 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    topic = msg.topic
-    payload = msg.payload.decode("utf-8")
-
-    if topic == "pico/button" and payload == 'p':
-        print("Received pump request")
-        pico_serial.write('p')
+    print("Received pump request")
+    pico_serial.write('p'.encode())
 
 
 client = mqtt.Client()
@@ -32,11 +28,11 @@ while True:
     plant_water_alarm, pump_water_alarm, moisture, light = data.split(
         ",")
 
-    # print(f"{plant_water_alarm} - {pump_water_alarm} - {moisture} - {light}")
+    print(f"{plant_water_alarm} - {pump_water_alarm} - {moisture} - {light}")
 
-    # client.publish("pico/data/plantwateralarm", plant_water_alarm)
-    # client.publish("pico/data/pumpwateralarm", pump_water_alarm)
-    # client.publish("pico/data/moisture", moisture)
-    # client.publish("pico/data/light", light)
+    client.publish("pico/data/plantwateralarm", plant_water_alarm)
+    client.publish("pico/data/pumpwateralarm", pump_water_alarm)
+    client.publish("pico/data/moisture", moisture)
+    client.publish("pico/data/light", light)
 
     client.loop()
