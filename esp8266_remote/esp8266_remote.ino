@@ -124,7 +124,7 @@ void loop()
   
       if (mqtt.connect("ESP32Client", mqttUsername, mqttKey)) {
         Serial.println("Connected to MQTT");  
-        mqtt.publish(mqttTopic, "Button pressed");
+        mqtt.publish(mqttTopic, "p");
       } else {
         Serial.print("Failed with state: ");
         Serial.println(mqtt.state());
