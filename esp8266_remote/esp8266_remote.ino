@@ -113,23 +113,48 @@ void setup()
   server.begin();
 }
 
-void loop()
-{  
-  if (button_pressed) {
-    // connect to mqtt
-    mqtt.setServer(mqttServer, mqttPort);
-  
+void callback(char* topic, byte* message, unsigned int length) {
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+
+  String message_buffer;
+
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    message_buffer += (char)message[i] ;
+  }
+  Serial.println();
+}
+
+void mqtt_connect() {
     while (!mqtt.connected()) {
       Serial.println("Connecting to MQTT...");
   
       if (mqtt.connect("ESP32Client", mqttUsername, mqttKey)) {
         Serial.println("Connected to MQTT");  
-        mqtt.publish(mqttTopic, "p");
+        mqtt.subscribe("pico/button");
       } else {
         Serial.print("Failed with state: ");
         Serial.println(mqtt.state());
         delay(2000);  
       }
+    }
+}
+
+void loop()
+{  
+  if (!mqtt.connected()) {
+      mqtt_connect()
+  }
+  mqtt.loop();
+
+  if (button_pressed) {
+    if (mqtt.publish(mqttTopic, "p")) {
+      Serial.println("Message published");
+    } else {
+      Serial.print("State: ");
+      Serial.println(mqtt.state());
     }
 
     button_pressed = false;

@@ -30,8 +30,8 @@ while True:
 
     print(f"{plant_water_alarm} - {pump_water_alarm} - {moisture} - {light}")
 
-    client.publish("pico/data/plantwateralarm", plant_water_alarm)
-    client.publish("pico/data/pumpwateralarm", pump_water_alarm)
+    client.publish("pico/data/plant_water_alarm", plant_water_alarm)
+    client.publish("pico/data/pump_water_alarm", pump_water_alarm)
     client.publish("pico/data/moisture", moisture)
     client.publish("pico/data/light", light)
 
