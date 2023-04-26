@@ -50,7 +50,7 @@ def pump_request():
 
 def run_pump():
     if plant_water_alarm.value() or pump_water_alarm.value():
-        print("Alarm!")
+        # print("Alarm!")
         return
     
     pump_control.high()
@@ -64,17 +64,19 @@ while True:
     elapsed_time = current_time - start_time
     
     if elapsed_time >= twelve_hours:
-        print("12 hours have passed")
+        # print("12 hours have passed")
         
         run_pump()
         
         start_time = time.time()
         
     if elapsed_time >= one_hour and moisture() < moisture_threshold:
-        print("Moisture low! Watering")
+        # print("Moisture low! Watering")
         run_pump()
         
     utime.sleep(1)
         
     print("%d,%d,%.0f,%.0f" % (plant_water_alarm.value(), pump_water_alarm.value(), moisture(), light()))
+
+
 
