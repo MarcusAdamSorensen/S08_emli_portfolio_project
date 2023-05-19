@@ -169,7 +169,7 @@ void loop()
   }
   mqtt.loop();
 
-  if (plant_water_alarm == 0 || pump_water_alarm == 0) {
+  if (plant_water_alarm == 1 || pump_water_alarm == 0) {
     digitalWrite(PIN_LED_RED, HIGH);
     digitalWrite(PIN_LED_YELLOW, LOW);
     digitalWrite(PIN_LED_GREEN, LOW);  
