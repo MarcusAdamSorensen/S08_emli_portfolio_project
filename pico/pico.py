@@ -53,7 +53,7 @@ def pump_request():
 
 
 def run_pump():
-    if plant_water_alarm.value() or pump_water_alarm.value():
+    if plant_water_alarm.value() == 1 or pump_water_alarm.value() == 0:
         # print("Alarm!")
         return
 
