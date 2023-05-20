@@ -87,7 +87,7 @@ void setup()
 
   // button
   pinMode(PIN_BUTTON, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PIN_BUTTON), button_a_isr, RISING);
+  //attachInterrupt(digitalPinToInterrupt(PIN_BUTTON), button_a_isr, RISING);
 
   // set the ESP8266 to be a WiFi-client
   WiFi.mode(WIFI_STA); 
