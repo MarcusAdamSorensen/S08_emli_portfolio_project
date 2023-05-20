@@ -11,11 +11,19 @@
 #define PIN_LED_GREEN   12
 
 // button
-#define PIN_BUTTON      4
-#define DEBOUNCE_TIME 200 // milliseconds
-volatile int button_a_count;
-volatile bool button_pressed = false;
-volatile unsigned long count_prev_time;
+//#define PIN_BUTTON      4
+//#define DEBOUNCE_TIME 200 // milliseconds
+//volatile int button_a_count;
+//volatile bool button_pressed = false;
+//volatile unsigned long count_prev_time;
+
+// button
+#define PIN_BUTTON 4
+const long buttonDelay = 2000;
+unsigned long currentTime = 0; 
+bool buttonState = HIGH;
+bool lastButtonState = HIGH; 
+
 
 // Wifi
 #include <ESP8266WiFi.h>
@@ -49,17 +57,17 @@ const char* mqttTopic = "pico/button";
 
 PubSubClient mqtt(client);
 
-ICACHE_RAM_ATTR void button_a_isr()
-{
-  if (millis() - count_prev_time > DEBOUNCE_TIME)
-  {
-    count_prev_time = millis();
-    button_a_count++;
-    Serial.println("Button pressed");
+//ICACHE_RAM_ATTR void button_a_isr()
+//{
+//  if (millis() - count_prev_time > DEBOUNCE_TIME)
+//  {
+//    count_prev_time = millis();
+//    button_a_count++;
+//    Serial.println("Button pressed");
     
-    button_pressed = true;
-  }
-}
+//    button_pressed = true;
+//  }
+//}
 
 void setup()
 {
@@ -182,15 +190,39 @@ void loop()
     digitalWrite(PIN_LED_YELLOW, LOW);
     digitalWrite(PIN_LED_GREEN, HIGH); 
   };
+  
+  // Reset debounce timer if button state has changed.
+  bool reading = digitalRead(PIN_BUTTON); 
+  if (reading != lastButtonState) {
+    currentTime = millis();
+  }
 
-  if (button_pressed) {
-    if (mqtt.publish(mqttTopic, "p")) {
-      Serial.println("Message published");
-    } else {
-      Serial.print("State: ");
-      Serial.println(mqtt.state());
+  // Checks whether 2 seconds have passed since last press.
+  if ((millis() - currentTime) > buttonDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;
+      if (buttonState == LOW) {
+        if (mqtt.publish(mqttTopic, "p")) {
+          Serial.println("Message published");
+        } else {
+          Serial.print("State: ");
+          Serial.println(mqtt.state());
+        }
+      }
     }
+  }
+  lastButtonState = reading;
 
-    button_pressed = false;
+
+
+//  if (button_pressed) {
+    //if (mqtt.publish(mqttTopic, "p")) {
+//      Serial.println("Message published");
+//    } else {
+//      Serial.print("State: ");
+//      Serial.println(mqtt.state());
+//    }
+
+//    button_pressed = false;
   }
 }
