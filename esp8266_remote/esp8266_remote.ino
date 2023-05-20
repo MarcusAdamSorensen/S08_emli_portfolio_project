@@ -134,7 +134,7 @@ void callback(char* topic, byte* message, unsigned int length) {
   }
   Serial.println();
 
-  if (String(topic) == "pico/data/plant_water_alarm" || String(topic) == "pico/data/pump_water_alarm") {
+  if (String(topic) == "pico/data/plant_water_alarm") {
     plant_water_alarm = message_buffer.toInt();
   } else if (String(topic) == "pico/data/pump_water_alarm") {
     pump_water_alarm = message_buffer.toInt();  
