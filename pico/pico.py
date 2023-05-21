@@ -68,7 +68,10 @@ while True:
     current_time = time.time()
     elapsed_time = current_time - start_time
 
-    if elapsed_time >= twelve_hours:
+    if pump_request():
+        run_pump
+        start_time = time.time()
+    elif elapsed_time >= twelve_hours:
         run_pump()
         start_time = time.time()
     elif elapsed_time >= one_hour and moisture() < moisture_threshold:
