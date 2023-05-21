@@ -69,15 +69,11 @@ while True:
     elapsed_time = current_time - start_time
 
     if elapsed_time >= twelve_hours:
-        # print("12 hours have passed")
-
         run_pump()
-
         start_time = time.time()
-
-    if elapsed_time >= one_hour and moisture() < moisture_threshold:
-        # print("Moisture low! Watering")
+    elif elapsed_time >= one_hour and moisture() < moisture_threshold:
         run_pump()
+        start_time = time.time()
 
     utime.sleep(1)
 
