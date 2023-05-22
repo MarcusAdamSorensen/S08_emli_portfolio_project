@@ -213,8 +213,6 @@ void loop()
   }
   lastButtonState = reading;
 
-
-
 //  if (button_pressed) {
     //if (mqtt.publish(mqttTopic, "p")) {
 //      Serial.println("Message published");
@@ -224,5 +222,4 @@ void loop()
 //    }
 
 //    button_pressed = false;
-  }
 }
