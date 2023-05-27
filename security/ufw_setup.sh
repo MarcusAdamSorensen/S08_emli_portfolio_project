@@ -16,6 +16,10 @@ ufw allow in http
 ufw allow out https
 ufw allow in https
 ufw allow out 53
+ufw allow 3000
+ufw allow 1883
+ufw allow 8088
+ufw allow 8086
 ufw logging on
 
 #print added rules
