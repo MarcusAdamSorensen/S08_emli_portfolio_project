@@ -5,6 +5,18 @@ if [ "$EUID" != 0 ]
   exit
 fi
 
+name="ufw"
+dpkg -s $name &> /dev/null  
+
+if [ $? -ne 0 ]
+    then
+        echo "not installed"  
+        sudo apt-get update
+        sudo apt-get install $name
+    else
+        echo "$name already installed"
+fi
+
 ufw disable
 
 #clear/remove all existing rules (clean slate)
