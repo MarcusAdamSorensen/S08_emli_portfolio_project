@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$EUID" != 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
 ufw disable
 
 #clear/remove all existing rules (clean slate)
