@@ -69,7 +69,7 @@ while True:
     elapsed_time = current_time - start_time
 
     if pump_request():
-        run_pump
+        run_pump()
         start_time = time.time()
     elif elapsed_time >= twelve_hours:
         run_pump()
